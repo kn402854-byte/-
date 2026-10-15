@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Карьер Про — интерактивный карьер</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#081522;color:#eaf6ff;font:15px system-ui,Arial,sans-serif}header{padding:12px 16px;background:#0b2030;border-bottom:1px solid #2c5269;display:flex;align-items:center;gap:16px;flex-wrap:wrap}h1{font-size:20px;margin:0}header span{color:#a8c3d5;font-size:13px}.stats{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}.stat{background:#112c40;border:1px solid #315a72;padding:7px 10px;border-radius:9px;font-size:12px}.stat b{display:block;font-size:16px}.layout{display:grid;grid-template-columns:250px minmax(300px,1fr) 270px;gap:12px;padding:12px;max-width:1500px;margin:auto}.panel{background:#0e2536;border:1px solid #2a5068;border-radius:12px;padding:12px;min-width:0}.panel h2{font-size:15px;margin:0 0 10px}.machine{display:block;width:100%;text-align:left;margin:7px 0;padding:10px;border-radius:9px;border:1px solid #31566c;background:#0a1c2a;color:#eaf6ff;cursor:pointer}.machine.selected{border:2px solid #37a8ff;background:#133950}.machine small{display:block;color:#a8c3d5;margin-top:3px}.machine:focus-visible,button:focus-visible{outline:3px solid #9cdbff;outline-offset:2px}button{color:#eaf6ff;background:#173c54;border:1px solid #396982;border-radius:8px;padding:9px 11px;cursor:pointer;font-weight:600}button:hover{filter:brightness(1.2)}button:active{transform:translateY(1px)}button.primary{background:#087bd7;border-color:#39a6ff}button.green{background:#08764f;border-color:#1bc38a}button.red{background:#772b35;border-color:#e55b65}button.gold{background:#6a4b0d;border-color:#d5a43d}.canvas-wrap{position:relative;background:#1c3437;border:1px solid #3b6470;border-radius:10px;overflow:hidden}canvas{display:block;width:100%;height:auto;aspect-ratio:800/500;cursor:pointer}.map-caption{position:absolute;left:10px;bottom:9px;background:#071521d9;border:1px solid #35566a;padding:7px 9px;border-radius:8px;font-size:12px;pointer-events:none}.controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.controls button{min-height:42px}.wide{grid-column:1/-1}.muted{color:#a6c2d4;font-size:12px}.line{height:1px;background:#25475b;margin:12px 0}.status{font-weight:700;font-size:12px}.ok{color:#30d6a0}.bad{color:#ff666d}.warn{color:#ffd064}.meter{height:7px;background:#233e4f;border-radius:20px;overflow:hidden;margin:5px 0 9px}.meter i{display:block;height:100%;background:#19c38b}.meter.low i{background:#ff6268}.meter.mid i{background:#f0b63d}.message{padding:9px;border-radius:8px;background:#112f43;margin:7px 0;font-size:13px}.log{max-height:180px;overflow:auto;font-size:12px;color:#bed4e3}.log div{padding:5px 0;border-bottom:1px solid #234357}.foot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.hidden{display:none!important}@media(max-width:900px){.layout{grid-template-columns:1fr 1fr}.center{grid-column:1/-1;grid-row:1}.foot{grid-column:1/-1}}@media(max-width:600px){.layout{grid-template-columns:1fr;padding:8px}.center{grid-column:auto}.stats{margin-left:0}.foot{grid-column:auto}}
+</style>
+</head>
+<body>
+<header><div><h1>⛰ КАРЬЕР ПРО</h1><span>Схематичная интерактивная игра · одна смена</span></div><div class="stats">
+<div class="stat">Время<b id="time">07:00</b></div><div class="stat">Добыто<b id="ore">0 т</b></div><div class="stat">Бюджет<b id="money">2 500 000 ₽</b></div><div class="stat">Простой<b id="down">0 ч</b></div></div></header>
+<main class="layout">
+<section class="panel"><h2>🚜 Техника — выбери машину</h2><div id="fleet"></div><div class="line"></div><h2>События</h2><div id="events" class="muted">Пока всё спокойно.</div><button id="inspect" class="wide" style="width:100%;margin-top:8px">🔎 Проверить выбранную</button></section>
+<section class="panel center"><h2>Карта карьера <span class="muted">· нажми на машину, чтобы выбрать</span></h2><div class="canvas-wrap"><canvas id="scene" width="800" height="500" aria-label="Схематичная карта карьера"></canvas><div class="map-caption">Забой ⛏ → Дорога → Дробилка ▦</div></div><div class="controls">
+<button id="route" class="primary">🧭 Назначить маршрут</button><button id="start" class="green">▶ Запустить машину</button><button id="stop">⏸ Остановить</button><button id="repair" class="gold">🔧 Ремонт</button><button id="fuel">⛽ Заправить</button><button id="hour">⏩ Следующий час</button><button id="pause">⏸ Пауза</button><button id="finish" class="red">Завершить смену</button></div><div id="notice" class="message">Выбери самосвал и запусти его на маршрут, чтобы добывать руду.</div><div class="line"></div><h2>Журнал смены</h2><div id="log" class="log"></div></section>
+<section class="panel"><h2>📊 Выбранная техника</h2><div id="details"></div><div class="line"></div><h2>🎯 План на день</h2><div id="goal" class="message">Добыть 12 000 тонн до 19:00.</div><div class="muted">Подсказка: изношенная техника чаще ломается. Следи за топливом и состоянием каждой машины.</div></section>
+<div class="panel foot"><span class="muted">Управление: кликай кнопки или выбирай технику на карте. Время движется только по кнопке «Следующий час».</span><button id="reset">↻ Новая смена</button></div>
+</main>
+<script>
+(()=> {
+const $=id=>document.getElementById(id);
+const seed=[
+{id:1,name:"БЕЛАЗ №14",type:"Самосвал",icon:"🚛",x:145,y:275,health:83,fuel:78,status:"Работает",route:0,load:0},
+{id:2,name:"БЕЛАЗ №11",type:"Самосвал",icon:"🚛",x:260,y:355,health:94,fuel:63,status:"Работает",route:0,load:0},
+{id:3,name:"БЕЛАЗ №15",type:"Самосвал",icon:"🚛",x:420,y:270,health:68,fuel:39,status:"Остановлен",route:0,load:0},
+{id:4,name:"ЭКГ-10 №07",type:"Экскаватор",icon:"🚜",x:325,y:135,health:91,fuel:86,status:"Работает",route:1,load:0},
+{id:5,name:"Бульдозер №03",type:"Бульдозер",icon:"🚜",x:170,y:425,health:76,fuel:55,status:"Работает",route:2,load:0},
+{id:6,name:"Погрузчик №12",type:"Погрузчик",icon:"🚜",x:640,y:365,health:87,fuel:71,status:"Работает",route:3,load:0}
+];
+let machines=structuredClone(seed),selected=1,hour=7,ore=0,money=2500000,down=0,paused=false,ended=false,spares=4,logs=[],events=[],target=0;
+const routes=["Забой → Дробилка","Погрузка в забое","Планировка дороги","Погрузка склада","Ожидание"];
+const m=()=>machines.find(x=>x.id===selected),fmt=n=>Math.round(n).toLocaleString("ru-RU");
+function say(t){$("notice").textContent=t}
+function log(t){logs.unshift(`${String(hour).padStart(2,"0")}:00 — ${t}`);logs=logs.slice(0,15);$("log").innerHTML=logs.map(x=>`<div>${x}</div>`).join("")}
+function event(t){events.unshift(t);events=events.slice(0,3);$("events").innerHTML=events.map(x=>`<div class="message">${x}</div>`).join("")||"Пока всё спокойно."}
+function select(id){selected=id;render()}
+function statusClass(x){return x.status==="Работает"?"ok":x.status==="Ремонт"?"warn":"bad"}
+function render(){
+$("time").textContent=String(hour).padStart(2,"0")+":00";$("ore").textContent=fmt(ore)+" т";$("money").textContent=fmt(money)+" ₽";$("down").textContent=down.toFixed(1)+" ч";
+$("fleet").innerHTML=machines.map(x=>`<button class="machine ${x.id===selected?"selected":""}" data-id="${x.id}">${x.icon} <b>${x.name}</b><small><span class="${statusClass(x)}">${x.status}</span> · Состояние ${x.health}% · Топливо ${x.fuel}%</small></button>`).join("");
+$("fleet").querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>select(Number(b.dataset.id))));
+const x=m();$("details").innerHTML=`<div style="font-size:20px;font-weight:700">${x.icon} ${x.name}</div><div class="muted">${x.type}</div><p class="${statusClass(x)}">${x.status}</p><div>Состояние: <b>${x.health}%</b></div><div class="meter ${x.health<30?"low":x.health<60?"mid":""}"><i style="width:${x.health}%"></i></div><div>Топливо: <b>${x.fuel}%</b></div><div class="meter ${x.fuel<20?"low":x.fuel<40?"mid":""}"><i style="width:${x.fuel}%"></i></div><div>Маршрут: <b>${routes[x.route]}</b></div><div>Перевезено: <b>${fmt(x.load)} т</b></div><div class="muted" style="margin-top:8px">Запчасти на складе: ${spares} комплект.</div>`;
+$("goal").textContent=`Добыто ${fmt(ore)} / 12 000 т · Безопасность ${Math.max(0,Math.round(100-machines.filter(x=>x.status==="Остановлен").length*4))}%`;
+draw();
+}
+function draw(){
+const c=$("scene"),ctx=c.getContext("2d"),w=c.width,h=c.height;
+ctx.clearRect(0,0,w,h);
+let grd=ctx.createLinearGradient(0,0,w,h);grd.addColorStop(0,"#3e5945");grd.addColorStop(1,"#172f38");ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
+// quarry benches
+for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(390,245,340-i*42,200-i*26,-.18,0,Math.PI*2);ctx.fillStyle=["#5c6551","#4b5948","#3c5144","#34483e","#293f39"][i];ctx.fill();ctx.strokeStyle="#a9a17c";ctx.lineWidth=5;ctx.stroke();}
+// road curves
+ctx.beginPath();ctx.moveTo(35,390);ctx.bezierCurveTo(170,465,220,320,340,335);ctx.bezierCurveTo(460,355,510,425,770,285);ctx.strokeStyle="#8c8a70";ctx.lineWidth=35;ctx.stroke();ctx.strokeStyle="#d4c7a0";ctx.lineWidth=2;ctx.setLineDash([12,10]);ctx.stroke();ctx.setLineDash([]);
+ctx.fillStyle="#183a4a";ctx.fillRect(680,40,85,55);ctx.strokeStyle="#83c8e5";ctx.strokeRect(680,40,85,55);ctx.fillStyle="#e4f4ff";ctx.font="14px system-ui";ctx.fillText("ДРОБИЛКА",684,33);
+ctx.fillStyle="#e5d6a2";ctx.fillText("ЗАБОЙ ⛏",40,55);ctx.fillText("СКЛАД",675,445);
+machines.forEach(x=>{
+let sx=x.x,sy=x.y;if(x.status==="Работает"&&x.route===0){sx+=Math.sin(hour*.8+x.id)*13;sy+=Math.cos(hour*.8+x.id)*8}
+if(x.status==="Работает"&&x.route===1){sx=325+Math.sin(hour*.4)*10;sy=135+Math.cos(hour*.4)*7}
+ctx.save();ctx.translate(sx,sy);
+if(x.id===selected){ctx.beginPath();ctx.arc(0,0,35,0,Math.PI*2);ctx.strokeStyle="#58c0ff";ctx.lineWidth=3;ctx.stroke()}
+ctx.fillStyle="#07131b99";ctx.beginPath();ctx.ellipse(0,17,30,10,0,0,Math.PI*2);ctx.fill();
+ctx.fillStyle=x.status==="Работает"?"#ffbd35":x.status==="Ремонт"?"#f2a93b":"#e64d56";
+ctx.fillRect(-21,-12,39,20);ctx.fillRect(5,-20,14,12);ctx.fillStyle="#172630";ctx.fillRect(7,-18,10,8);
+ctx.fillStyle="#101820";for(let wx of [-14,14]){ctx.beginPath();ctx.arc(wx,10,7,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#8398a0";ctx.lineWidth=2;ctx.stroke()}
+ctx.fillStyle="#fff";ctx.font="bold 12px system-ui";ctx.textAlign="center";ctx.fillText(x.icon,0,-27);
+ctx.fillStyle="#06141fe8";ctx.fillRect(-42,25,84,19);ctx.fillStyle="#f2f8fb";ctx.font="11px system-ui";ctx.fillText(x.name,0,38);
+if(x.status!=="Работает"){ctx.fillStyle="#ff777c";ctx.fillText(x.status==="Ремонт"?"РЕМОНТ":"СТОП",0,54)}
+ctx.restore();
+});
+}
+$("scene").addEventListener("click",e=>{const rect=$("scene").getBoundingClientRect(),x=(e.clientX-rect.left)*800/rect.width,y=(e.clientY-rect.top)*500/rect.height;let nearest=null,dist=1e9;machines.forEach(v=>{let d=Math.hypot(v.x-x,v.y-y);if(d<dist){dist=d;nearest=v}});if(nearest&&dist<65){select(nearest.id);say("Выбрана "+nearest.name+". Управляй кнопками ниже карты.")}});
+$("route").addEventListener("click",()=>{let x=m();x.route=(x.route+1)%routes.length;log(`${x.name}: маршрут — ${routes[x.route]}.`);say(`Маршрут назначен: ${routes[x.route]}.`);render()});
+$("start").addEventListener("click",()=>{let x=m();if(ended){say("Смена завершена — начни новую смену.");return}if(x.health<10){say("Машина слишком повреждена. Сначала ремонт.");return}if(x.fuel<8){say("Мало топлива. Заправь машину.");return}x.status="Работает";log(`${x.name} запущен: ${routes[x.route]}.`);say(x.name+" выехал на маршрут.");render()});
+$("stop").addEventListener("click",()=>{let x=m();x.status="Остановлен";log(`${x.name} остановлен вручную.`);say("Машина остановлена.");render()});
+$("repair").addEventListener("click",()=>{let x=m();if(x.status==="Ремонт"){say("Эта машина уже в ремонте.");return}let cost=x.health<35?85000:45000;if(spares<=0){say("Запчастей нет — нажми «Закупить запчасти» в следующей версии или начни новый день.");return}if(money<cost){say("Недостаточно денег для ремонта.");return}money-=cost;spares--;x.health=Math.min(100,x.health+(cost===85000?60:35));x.status="Остановлен";log(`${x.name} отремонтирован за ${fmt(cost)} ₽.`);say("Ремонт завершён. Нажми «Запустить машину», когда будешь готов.");render()});
+$("fuel").addEventListener("click",()=>{let x=m();if(money<8000){say("Недостаточно денег для заправки.");return}money-=8000;x.fuel=100;log(`${x.name} заправлен за 8 000 ₽.`);say("Бак выбранной машины полный.");render()});
+$("inspect").addEventListener("click",()=>{let x=m();money-=5000;if(x.health<65){x.health=Math.min(100,x.health+8);log(`Диагностика ${x.name}: найден износ, выполнена регулировка (+8%).`);say("Диагностика выявила износ: состояние немного улучшено.")}else{log(`Диагностика ${x.name}: критических проблем нет.`);say("Диагностика завершена: критических проблем нет.")}render()});
+$("hour").addEventListener("click",()=>{if(paused||ended){say(ended?"Смена завершена. Начни новую смену.":"Пауза включена — нажми «Продолжить».");return}if(hour>=19){finish();return}hour++;machines.forEach(x=>{if(x.status!=="Работает"){if(x.status==="Остановлен")down+=.25;return}x.fuel=Math.max(0,x.fuel-(x.type==="Самосвал"?7:4));x.health=Math.max(0,x.health-(Math.random()<.3?4:2));if(x.route===0&&x.type==="Самосвал"){let n=350+Math.floor(Math.random()*250);ore+=n;x.load+=n;money+=n*35}else if(x.route===1&&x.type==="Экскаватор"){ore+=180+Math.floor(Math.random()*120)}if(x.fuel===0||x.health<20){x.status="Остановлен";down+=1;event(`${x.name}: ${x.fuel===0?"закончилось топливо":"критический износ"} — машина остановлена.`);log(`${x.name} автоматически остановлен.`)}else if(Math.random()<.09){x.status="Остановлен";down+=.5;event(`${x.name}: внезапная неисправность. Проведи диагностику или ремонт.`);log(`${x.name} сломался во время смены.`)}});log(`Прошёл час. Добыто ${fmt(ore)} т.`);if(hour>=19)finish();render();say("Время прошло на один час. Проверь состояние и топливо.")});
+$("pause").addEventListener("click",()=>{paused=!paused;$("pause").textContent=paused?"▶ Продолжить":"⏸ Пауза";say(paused?"Пауза включена.":"Игра продолжается.");});
+$("finish").addEventListener("click",finish);
+function finish(){ended=true;let bonus=ore>=12000?250000:0;money+=bonus;say(`Смена завершена. Добыча: ${fmt(ore)} т. ${bonus?"План выполнен: премия 250 000 ₽.":"План не выполнен."} Бюджет: ${fmt(money)} ₽.`);$("finish").textContent="Смена завершена";$("hour").disabled=true;log("Смена завершена. Нажми «Новая смена», чтобы сыграть снова.");render()}
+$("reset").addEventListener("click",()=>{machines=structuredClone(seed);selected=1;hour=7;ore=0;money=2500000;down=0;paused=false;ended=false;spares=4;logs=[];events=[];$("hour").disabled=false;$("finish").textContent="Завершить смену";$("pause").textContent="⏸ Пауза";$("events").textContent="Пока всё спокойно.";log("Началась новая смена. Выбери технику и назначь маршрут.");render();say("Новая смена началась. Все кнопки готовы к работе.")});
+log("Началась смена. Выбери технику и назначь маршрут.");render();
+})();
+</script></body></html>
